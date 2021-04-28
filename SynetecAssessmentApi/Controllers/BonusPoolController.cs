@@ -1,29 +1,32 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SynetecAssessmentApi.Dtos;
-using SynetecAssessmentApi.Services;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SynetecAssessmentApi.Controllers
 {
     [Route("api/[controller]")]
-    public class BonusPoolController : Controller
+    [ApiController]
+    public class BonusPoolController : ControllerBase
     {
+        // GET: api/<BonusPoolController>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public IActionResult GetAll()
         {
-            var bonusPoolService = new BonusPoolService();
-
-            return Ok(await bonusPoolService.GetEmployeesAsync());
+             IEnumerable<string> result = new string[] { "value1", "value2" };
+            return Ok(result);
         }
 
-        [HttpPost()]
-        public async Task<IActionResult> CalculateBonus([FromBody] CalculateBonusDto request)
+        // GET api/<BonusPoolController>/5
+        [HttpGet("{id}")]
+        public string Get(int id)
         {
-            var bonusPoolService = new BonusPoolService();
+            return "value";
+        }
 
-            return Ok(await bonusPoolService.CalculateAsync(
-                request.TotalBonusPoolAmount,
-                request.SelectedEmployeeId));
+        // POST api/<BonusPoolController>
+        [HttpPost]
+        public void Post([FromBody] string value)
+        {
         }
     }
 }
