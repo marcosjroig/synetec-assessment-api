@@ -1,25 +1,27 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using SynetecAssessmentApi.Domain;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SynetecAssessmentApi.Persistence
 {
-    public class DbContextGenerator
+    public class DbContextGenerator : IDisposable
     {
-        public static void Initialize(IServiceProvider serviceProvider)
+        public AppDbContext AppContext { get; set; }
+
+        public DbContextGenerator()
         {
-            using var context = new AppDbContext(
-                serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>());
+            var databaseName = "HrDb_" + DateTime.Now.ToFileTimeUtc();
+            var options = new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(databaseName)
+                .Options;
 
-            if (context.Employees.Any()) return;
+            AppContext = new AppDbContext(options);
 
-            SeedData(context);
+            SeedData();
         }
-
-        public static void SeedData(AppDbContext context)
+        
+        private void SeedData()
         {
             var departments = new List<Department>
             {
@@ -45,10 +47,15 @@ namespace SynetecAssessmentApi.Persistence
                 new Employee(12, "Jennifer Smith", "Accountant (Junior)", 48000, 1),
             };
 
-            context.Departments.AddRange(departments);
-            context.Employees.AddRange(employees);
+            AppContext.Departments.AddRange(departments);
+            AppContext.Employees.AddRange(employees);
 
-            context.SaveChanges();
+            AppContext.SaveChanges();
+        }
+
+        public void Dispose()
+        {
+            AppContext.Dispose();
         }
     }
 }

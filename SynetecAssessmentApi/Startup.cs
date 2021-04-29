@@ -1,8 +1,14 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using SynetecAssessmentApi.Builders;
+using SynetecAssessmentApi.Calculations;
+using SynetecAssessmentApi.DbContext;
+using SynetecAssessmentApi.Mappings;
+using SynetecAssessmentApi.Services;
 
 namespace SynetecAssessmentApi
 {
@@ -18,6 +24,19 @@ namespace SynetecAssessmentApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Auto Mapper Configurations
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
+            services.AddScoped<IDbContextBuilder, DbContextBuilder>();
+            services.AddScoped<IBonusPoolService, BonusPoolService>();
+            services.AddScoped<IBonusCalculator, BonusCalculator>();
+            services.AddScoped<ICalculatorResultBuilder, CalculatorResultBuilder>();
             services.AddControllers();
         }
 

@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using SynetecAssessmentApi.Dtos;
+using SynetecAssessmentApi.Extensions;
+using SynetecAssessmentApi.Services;
 
 namespace SynetecAssessmentApi.Controllers
 {
@@ -8,25 +11,39 @@ namespace SynetecAssessmentApi.Controllers
     [ApiController]
     public class BonusPoolController : ControllerBase
     {
-        // GET: api/<BonusPoolController>
-        [HttpGet]
-        public IActionResult GetAll()
+        private readonly IBonusPoolService _bonusPoolService;
+        private readonly IMapper _mapper;
+
+        public BonusPoolController(IBonusPoolService bonusPoolService, IMapper mapper)
         {
-             IEnumerable<string> result = new string[] { "value1", "value2" };
-            return Ok(result);
+            _bonusPoolService = bonusPoolService;
+            _mapper = mapper;
         }
 
-        // GET api/<BonusPoolController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        // GET: api/<BonusPoolController>
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
         {
-            return "value";
+            return Ok((await _bonusPoolService.GetEmployeesAsync()).MapEmployeesToEmployeeDto(_mapper));
         }
 
         // POST api/<BonusPoolController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> CalculateBonus([FromBody] CalculateBonusDto request)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+
+            var calculatorResult = await _bonusPoolService.CalculateAsync(request.TotalBonusPoolAmount, request.SelectedEmployeeId);
+
+            if (calculatorResult == null )
+            {
+                return BadRequest("The Employee does not exists.");
+            }
+
+            return Ok(calculatorResult);
         }
     }
 }
